@@ -253,21 +253,30 @@ export const actionsList = [
         })
     },
     {
-        name: '!smeltItem',
-        description: 'Smelt the given item the given number of times.',
-        params: {
-            'item_name': { type: 'ItemName', description: 'The name of the input item to smelt.' },
-            'num': { type: 'int', description: 'The number of times to smelt the item.', domain: [1, Number.MAX_SAFE_INTEGER] }
-        },
-        perform: runAsAction(async (agent, item_name, num) => {
-            let response = await skills.smeltItem(agent.bot, item_name, num);
-            if (response.indexOf('Successfully') !== -1) {
-            // there is a bug where the bot's inventory is not updated after smelting
-            // only updates after a restart
+    name: '!smeltItem',
+    description: 'Smelt the given item the given number of times.',
+    params: {
+        'item_name': { type: 'ItemName', description: 'The name of the input item to smelt.' },
+        'num': { type: 'int', description: 'The number of times to smelt the item.', domain: [1, Number.MAX_SAFE_INTEGER] }
+    },
+    perform: runAsAction(async (agent, item_name, num) => {
+        let response = await skills.smeltItem(agent.bot, item_name, num);
+
+        // Log the response for debugging
+        console.log('Response:', response, 'Type:', typeof response);
+
+        // Convert to string if needed
+        if (response && typeof response !== 'string') {
+            response = String(response);
+        }
+
+        // Check for success
+        if (response && response.indexOf('Successfully') !== -1) {
             agent.cleanKill(response + ' Safely restarting to update inventory.');
-            }
-            return response;
-        })
+        }
+
+        return response || 'No response from smeltItem';
+    })
     },
     {
         name: '!clearFurnace',
